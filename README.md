@@ -16,13 +16,16 @@ git clone https://github.com/tu-usuario/2i-loginweb-backend.git
 
 1.  Asegúrate de tener una base de datos PostgreSQL configurada y funcionando en tu entorno local.
 
-2.  Crea un archivo .env en la raíz del proyecto y define las siguientes variables de entorno:
+2.  Crea un archivo .env en la raíz del proyecto y define las siguientes variables de entorno, con el fin de poder testear la app
 
-
-    DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/logindatabase
+    DB_USER=postgres
+    DB_HOST=localhost
+    DB_PASSWORD=postgres
+    DB_NAME=logindatabase
+    DB_PORT=5432
     TOKEN_SECRET=token
 
-    Asegúrate de reemplazar usuario y contraseña con tus credenciales de PostgreSQL, y secreto_para_jwt con una cadena aleatoria para la generación de tokens JWT.
+Asegúrate de reemplazar usuario y contraseña con tus credenciales de PostgreSQL, y secreto_para_jwt con una cadena aleatoria para la generación de tokens JWT, si se quiere probar con un usuario propio.
 
 ## Uso
 

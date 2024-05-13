@@ -6,7 +6,7 @@ Este es el backend para la aplicación 2i-loginweb, que proporciona servicios de
 
 1. Clona este repositorio en tu máquina local:
 
-git clone https://github.com/tu-usuario/2i-loginweb-backend.git
+git clone https://github.com/marcosbonet/2i-loginweb
 
 2. Instala las dependencias utilizando npm:
 

@@ -1,11 +1,10 @@
 import { Router } from "express";
-import { signin, signup, profile } from "../controllers/auth.controllers";
-import { TokenValidation } from "../libs/varifyTocken";
+import { signin, register, profile } from "../controllers/auth.controllers";
 
 const router: Router = Router();
 
 router.post("/signin", signin);
-router.post("/signup", signup);
-router.get("/profile", TokenValidation, profile);
+router.post("/register", register);
+router.get("/profile", profile);
 
 export default router;

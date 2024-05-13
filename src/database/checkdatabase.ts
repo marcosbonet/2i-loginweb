@@ -12,6 +12,8 @@ export const checkDatabase = async () => {
     const tableExists = await pool.query(checkTableQuery);
 
     if (!tableExists.rows[0].exists) {
+      const createDataBase = `CREATE DATABASE logindatabase;
+      `;
       const createTableQuery = `
         CREATE TABLE login (
           id SERIAL PRIMARY KEY,
@@ -23,6 +25,7 @@ export const checkDatabase = async () => {
           password VARCHAR(150)
         );
       `;
+      await pool.query(createDataBase);
       await pool.query(createTableQuery);
     }
   } catch (error) {

@@ -16,3 +16,5 @@ INSERT INTO login (nickName, direccion)
         ('pedro', 'react');
 
 SELECT * FROM login;
+
+psql -U usuario -d basedatos -W

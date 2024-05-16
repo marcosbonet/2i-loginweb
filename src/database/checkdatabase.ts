@@ -1,22 +1,16 @@
-import { pool } from "../database";
+import sequelize from "../database";
 
 export const checkDatabase = async () => {
   try {
     const checkTableQuery = `
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name = 'login'
-      );
+      SELECT name FROM sqlite_master WHERE type='table' AND name='login';
     `;
-    const tableExists = await pool.query(checkTableQuery);
+    const [results] = await sequelize.query(checkTableQuery);
 
-    if (!tableExists.rows[0].exists) {
-      const createDataBase = `CREATE DATABASE logindatabase;
-      `;
+    if (results.length === 0) {
       const createTableQuery = `
         CREATE TABLE login (
-          id SERIAL PRIMARY KEY,
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
           nickname VARCHAR(40),
           nombre VARCHAR(40),
           apellido VARCHAR(40),
@@ -25,8 +19,7 @@ export const checkDatabase = async () => {
           password VARCHAR(150)
         );
       `;
-      await pool.query(createDataBase);
-      await pool.query(createTableQuery);
+      await sequelize.query(createTableQuery);
     }
   } catch (error) {
     console.error("Error al verificar y/o crear la tabla:", error);

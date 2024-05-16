@@ -1,8 +1,17 @@
 import { Request, Response } from "express";
-import { pool } from "../database";
+import sequelize from "../database";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { signUpValidation, signinValidation } from "../libs/joi";
+type User = {
+  id: number;
+  nickname: string;
+  nombre: string;
+  apellido: string;
+  direccion: string;
+  email: string;
+  password: string;
+};
 
 export const register = async (
   req: Request,
@@ -10,29 +19,37 @@ export const register = async (
 ): Promise<Response> => {
   const { error } = signUpValidation(req.body);
   if (error) {
-    return res.status(400).json({ message: error.message }); // Envía una respuesta de error con un mensaje JSON
+    return res.status(400).json({ message: error.message });
   }
   const { nickname, nombre, apellido, direccion, email, password } = req.body;
 
   try {
-    const existingUser = await pool.query("SELECT * FROM login ");
-
-    if (existingUser.rows[existingUser.rows.length - 1] === email) {
+    const users = "SELECT * FROM login ";
+    const usersList = await sequelize.query(users);
+    const user = usersList[0][usersList[0].length - 1] as User;
+    if (user.email === email) {
       return res
         .status(400)
         .json({ message: "El correo electrónico ya está en uso" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const insertUserQuery =
+      "INSERT INTO login (nickname, nombre, apellido, direccion, email, password) VALUES (?, ?, ?, ?, ?, ?) ";
+    const response = await sequelize.query(insertUserQuery, {
+      replacements: [
+        nickname,
+        nombre,
+        apellido,
+        direccion,
+        email,
+        hashedPassword,
+      ],
+    });
 
-    const response = await pool.query(
-      "INSERT INTO login(nickname, nombre, apellido, direccion, email, password) VALUES ($1, $2, $3, $4, $5, $6) ",
-      [nickname, nombre, apellido, direccion, email, hashedPassword]
-    );
-    const resp = response.rows;
     return res.json({
       message: "Usuario registrado correctamente",
-      existingUser,
+      response,
     });
   } catch (error) {
     console.error("Error al registrar usuario:", error);
@@ -43,29 +60,28 @@ export const register = async (
 export const signin = async (req: Request, res: Response) => {
   const { error } = signinValidation(req.body);
   if (error) {
-    return res.status(400).json({ message: error.message }); // Envía una respuesta de error con un mensaje JSON
+    return res.status(400).json({ message: error.message });
   }
   try {
-    const { email, password } = req.body;
-    const user = await pool.query("SELECT * FROM login ");
+    const { password } = req.body;
+    const userQuery = "SELECT * FROM login";
+    const users = await sequelize.query(userQuery);
+    const user = users[0][users[0].length - 1] as User;
 
-    if (user.rows[user.rowCount! - 1].length === 0) {
+    if (users[0][users[0].length] === 0) {
       return res.status(400).json({ message: "Usuario no encontrado" });
     }
 
-    const validPassword = await bcrypt.compare(
-      password,
-      user.rows[user.rowCount! - 1].password
-    );
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(400).json({ message: "Contraseña incorrecta" });
     }
 
     const token: string = jwt.sign(
-      { id: user.rows[0].id },
+      { id: user.id },
       process.env.TOKEN_SECRET || ""
     );
-    const profile = user.rows;
+    const profile = user;
     return res.json({ token, profile });
   } catch (e) {
     console.error("Error al iniciar sesión:", e);
@@ -83,8 +99,9 @@ export const profile = async (
     const payload = jwt.verify(token, process.env["TOKEN_SECRET"] || "");
     if (!payload)
       return res.status(404).json({ message: "Inicio de sesión requerido" });
-    const resp = await pool.query("SELECT * FROM login ");
-    const response = resp.rows[resp.rowCount! - 1];
+    const users = await sequelize.query("SELECT * FROM login ");
+    console.log(users);
+    const response = users[0][users[0].length - 1];
     return res.json(response);
   } catch (error) {
     console.error("Error al obtener el perfil del usuario:", error);

@@ -3,8 +3,6 @@ import routes from "./routes/auths";
 import morgan from "morgan";
 import cors from "cors";
 
-import { checkDatabase } from "./database/checkdatabase";
-checkDatabase();
 const app: Application = express();
 
 app.set("port", 3000);
